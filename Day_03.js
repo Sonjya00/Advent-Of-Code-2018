@@ -1232,7 +1232,7 @@ const test = inventory.split("\n");
 const removeID = /^#.+@\s/g;
 const removeDividers = /,|:|x/;
 
-// CHALLENGE TWO
+// CHALLENGE ONE
 
 // Get array of strings without the ID or ",:x"
 const arrayNum = test.map(string => {

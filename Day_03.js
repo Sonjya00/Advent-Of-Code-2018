@@ -1240,21 +1240,26 @@ const arrayNum = test.map(string => {
   return numStringified.map(string => parseInt(string));
 });
 
-// array with all unique coordinates
+// Make two arrays, one for all the unique coordinates, one for the duplicate entries.
+// Once looping through the entries, store the coordinates in either array: inside of
+// coordinates if it's the first time that we see those coordinates, and inside duplicates
+// if those coordinates are already included in the coordinates array (only once
+// if a duplicate for that coordinate has already been found)
 let coordinates = [];
-// array with all duplicates (one entry allowed only)
 let duplicates = [];
 // since ID was deleted from the entries, keep track of the ID with this variable
-let id = 1;
 
-// get the coordinates inside either one of the array
+// Get the coordinates of all the entries
 for (let entry = 0; entry < arrayNum.length; entry++) {
+  // times width
   for (let i = 1; i <= arrayNum[entry][2]; i++) {
+    // times length
     for (let j = 1; j <= arrayNum[entry][3]; j++) {
       const currentX = arrayNum[entry][0];
       const currentY = arrayNum[entry][1];
       const x = currentX + i;
       const y = currentY + j;
+      // store coordinates as a string
       let coordinate = x + "," + y;
       if (coordinates.includes(coordinate)) {
         if (!duplicates.includes(coordinate)) {
@@ -1264,13 +1269,16 @@ for (let entry = 0; entry < arrayNum.length; entry++) {
       coordinates.push(coordinate);
     }
   }
-  id++;
 }
-// Output the result
-console.log(duplicates.length);
+// Check the coordinates duplicates array length to see how many patches
+// Overlap at least once
+console.log(`There are ${duplicates.length} patches overlapping at least once`);
 
 // CHALLENGE TWO
-let idTwo = 1;
+
+// Since the ID was deleted from all entries, keep track with a variable
+// as we loop through the entries
+let currentID = 1;
 
 // Same loop, this time check if the coordinates are included
 // in the duplicates array. If an entry has no match in that array,
@@ -1290,7 +1298,7 @@ for (let entry = 0; entry < arrayNum.length; entry++) {
     }
   }
   if (duplicatePatches === 0) {
-    console.log(`ID is #${idTwo} with ${duplicatePatches} duplicates!`);
+    console.log(`ID is #${currentID} with ${duplicatePatches} duplicates!`);
   }
-  idTwo++;
+  currentID++;
 }

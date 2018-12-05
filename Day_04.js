@@ -1044,64 +1044,73 @@ const records = `[1518-06-05 00:46] falls asleep
 [1518-03-16 00:39] falls asleep`;
 
 // Initial dataset
-const orderetTest = records.split("\n").sort();
+const orderedRecords = records.split("\n").sort();
 
 // Regexp
-const guardRegexp = /#\d+/;
-const asleep = /falls asleep/;
-const findDate = /1518-\d\d-\d\d\s\d\d:\d\d/;
-
-// PART ONE
+const guardRegexp = /#\d+/; // to get the guards ID
+const asleep = /falls asleep/; // to set a flag for isAwake
+const findDate = /1518-\d\d-\d\d\s\d\d:\d\d/; // to get the date/time
 
 // Constructor function for timestamps
-function TimeStamp(hour, awake, guard) {
+function TimeStamp(hour, isAwake, guard) {
   this.hour = hour;
-  this.awake = awake;
+  this.isAwake = isAwake;
   this.guard = guard;
 }
 
-// Create set of timeStamps that include date, asleep boolean, and guard ID
+// Create an array of timeStamps.
+// Each entry includes hour, isAwake flag, and guard ID
 let currentGuard = null;
 let timeStampArray = [];
-for (let i = 0; i < orderetTest.length; i++) {
-  if (guardRegexp.test(orderetTest[i])) {
-    currentGuard = orderetTest[i].match(guardRegexp)[0];
+for (let i = 0; i < orderedRecords.length; i++) {
+  // If #num is found, currentGuard = guard ID reported
+  // in the entry. currentGuard will stay the same until the next
+  // entry containng a guard ID is found, so that until then
+  // all the timestamps have "guard = #num"
+  if (guardRegexp.test(orderedRecords[i])) {
+    currentGuard = orderedRecords[i].match(guardRegexp)[0];
   }
-  const date = new Date(orderetTest[i].match(findDate)[0]);
+  // Get date by using the regexp
+  const date = new Date(orderedRecords[i].match(findDate)[0]);
+  // Create a new timestamp
   const timeStamp = new TimeStamp(
     date,
-    asleep.test(orderetTest[i]) ? false : true,
+    asleep.test(orderedRecords[i]) ? false : true,
     currentGuard
   );
+  // Add it to the timeStampArray
   timeStampArray.push(timeStamp);
 }
 
-// Create an array of objects, which includes: guard ID, totMinutesAsleep, asleep start-end times
+// Create an array of objects, all of which include:
+// guard ID, totMinutesAsleep, asleep start-end times
 let guardsSleepTime = [];
-
 // Display how many minutes guards are asleep
 for (let i = 0; i < timeStampArray.length; i++) {
   const guardID = timeStampArray[i].guard;
-  // check if guard already is on the array
+  // check if guard already is on the array (we want only one entry for each guard)
   if (!guardsSleepTime.some(guard => guard.id === guardID)) {
     const guard = timeStampArray[i].guard;
     guardsSleepTime.push({ id: guard, totMinutesAsleep: 0, asleepMinutes: [] });
   }
-  if (!timeStampArray[i].awake) {
-    const startTime = timeStampArray[i].hour;
-    const nextTime = timeStampArray[i + 1].hour;
+  // if the guard is asleep in that timestamp, calculate how long s/he slept
+  // by using the next timestamp date
+  if (!timeStampArray[i].isAwake) {
+    const startTime = timeStampArray[i].hour; // current timestamp
+    const nextTime = timeStampArray[i + 1].hour; // next timestamp
     const diff = (nextTime.getTime() - startTime.getTime()) / 1000 / 60;
     const index = guardsSleepTime.findIndex(guard => guard.id === guardID);
     guardsSleepTime[index].totMinutesAsleep += diff;
+    // Create an array of start-end time for each time the guard fell asleep
     guardsSleepTime[index].asleepMinutes.push([
       startTime.getMinutes(),
-      nextTime.getMinutes() - 1
+      nextTime.getMinutes()
     ]);
   }
 }
 
-// Find out who slept the most
-let sleepiestGuard = "";
+// Find out the guard who slept the most
+let sleepiestGuard = ""; // at the end, this will be an object
 guardsSleepTime.forEach(guard => {
   if (
     sleepiestGuard === "" ||
@@ -1110,35 +1119,88 @@ guardsSleepTime.forEach(guard => {
     sleepiestGuard = guard;
   }
 });
-console.log(sleepiestGuard);
+console.log(`The sleepiest guard is ${sleepiestGuard.id}`);
 
-// Get all the pair start/end asleep time for the sleepiest guard
-let sleepyGuardMinutesTrack = [];
-sleepiestGuard.asleepMinutes.forEach(periodAsleep => {
-  for (let i = periodAsleep[0]; i <= periodAsleep[1]; i++) {
-    if (!sleepyGuardMinutesTrack.some(value => value.minute === i)) {
-      sleepyGuardMinutesTrack.push({ minute: i, tot: 1 });
-    } else {
-      const index = sleepyGuardMinutesTrack.findIndex(
-        value => value.minute === i
-      );
-      sleepyGuardMinutesTrack[index].tot++;
+// Returns an object containing 1) the guard's ID,
+// 2) an array containing objects with the total of times
+// a guard has slept through each minute, from 0 to 59
+// (ex --> {minute: 1, tot: 10})
+function getMinutesLog(guard) {
+  let guardLog = { id: guard.id };
+  let minutesArray = [];
+  guard.asleepMinutes.forEach(periodAsleep => {
+    for (let i = periodAsleep[0]; i < periodAsleep[1]; i++) {
+      if (!minutesArray.some(value => value.minute === i)) {
+        minutesArray.push({ minute: i, tot: 1 });
+      } else {
+        const index = minutesArray.findIndex(value => value.minute === i);
+        minutesArray[index].tot++;
+      }
     }
-  }
-});
+  });
+  guardLog.minutesArray = minutesArray;
+  return guardLog;
+}
+
+const sleepiestGuardLog = getMinutesLog(sleepiestGuard);
+
+// filter array to delete undefined
+const filteredguardsSleepTime = guardsSleepTime.filter(
+  guard => guard.asleepMinutes.length > 0
+);
+const minutesArray = filteredguardsSleepTime.map(guard => getMinutesLog(guard));
 
 // Find the minute more frequent for the guard to be asleep
 // by making an array of entries for each asleep minute
-let mostMinuteAsleep = "";
-sleepyGuardMinutesTrack.forEach(minute => {
-  // check if the comparing minute's tot is greater than the
-  // minute recorded as "most asleep" so far
-  if (mostMinuteAsleep === "" || mostMinuteAsleep.tot < minute.tot) {
-    mostMinuteAsleep = minute;
-  }
-});
-console.log(mostMinuteAsleep);
+function sleepiestMinute(id, arr) {
+  let mostMinuteAsleep = "";
+  arr.forEach(minute => {
+    // check if the comparing minute's tot is greater than the
+    // minute recorded as "most asleep" so far
+    if (mostMinuteAsleep === "" || mostMinuteAsleep.tot < minute.tot) {
+      mostMinuteAsleep = minute;
+    }
+  });
+  console.log(
+    `Minute ${
+      mostMinuteAsleep.minute
+    } was the sleepiest minute for guard ${id} (Slept ${
+      mostMinuteAsleep.tot
+    } times)`
+  );
+  const obj = { id: id, mostMinuteAsleep: mostMinuteAsleep };
+  return obj;
+}
 
-// Get final result
-const result = sleepiestGuard.id.match(/\d+/)[0] * mostMinuteAsleep.minute;
-console.log(result);
+const mostMinuteAsleepSleepyGuard = sleepiestMinute(
+  sleepiestGuardLog.id,
+  sleepiestGuardLog.minutesArray
+).mostMinuteAsleep.minute;
+
+// Variable that records the minute when each guard was asleep the most
+const mostMinuteAsleepAll = minutesArray.map(entry =>
+  sleepiestMinute(entry.id, entry.minutesArray)
+);
+
+// Get the final result for part one
+const resultOne =
+  sleepiestGuard.id.match(/\d+/)[0] * mostMinuteAsleepSleepyGuard;
+// const resultTwo = sleepiestGuard.id.match(/\d+/)[0] * mostMinuteAsleepAll;
+
+// Get the guard that sleeps on the same minute the most
+const resultTwoInitial = mostMinuteAsleepAll.reduce((a, b) =>
+  a.mostMinuteAsleep.tot > b.mostMinuteAsleep.tot ? a : b
+);
+console.log(
+  `The guard that sleeps most frequently on the same minute is ${
+    resultTwoInitial.id
+  }, sleeping ${resultTwoInitial.mostMinuteAsleep.tot} times on minute ${
+    resultTwoInitial.mostMinuteAsleep.minute
+  }`
+);
+// Get the final result for part two
+const resultTwo =
+  resultTwoInitial.id.match(/\d+/)[0] *
+  resultTwoInitial.mostMinuteAsleep.minute;
+
+console.log(`Here's the result: 1: ${resultOne}; 2: ${resultTwo}`);

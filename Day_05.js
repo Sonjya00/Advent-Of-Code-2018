@@ -7,16 +7,18 @@ const input =
 const inputArray = input.split("");
 
 // Loop over each letter of the array
-function getString(arr) {
-  for (let i = 0; i < arr.length; i++) {
+function getReducedString(arr) {
+  const arrCopy = arr.slice();
+  for (let i = 0; i < arrCopy.length; i++) {
     // check if next letter is the same of the current, but opposite case
     if (
-      (arr[i] === arr[i].toUpperCase() &&
-        arr[i + 1] === arr[i].toLowerCase()) ||
-      (arr[i] === arr[i].toLowerCase() && arr[i + 1] === arr[i].toUpperCase())
+      (arrCopy[i] === arrCopy[i].toUpperCase() &&
+        arrCopy[i + 1] === arrCopy[i].toLowerCase()) ||
+      (arrCopy[i] === arrCopy[i].toLowerCase() &&
+        arrCopy[i + 1] === arrCopy[i].toUpperCase())
     ) {
       // if so, remove both from the array
-      arr.splice(i, 2);
+      arrCopy.splice(i, 2);
       // fix the iterator, but prevent it from going as low as -2;
       if (i > 0) {
         i -= 2;
@@ -25,6 +27,38 @@ function getString(arr) {
       }
     }
   }
-  return arr.join("").length;
+  return arrCopy.join("").length;
 }
-getString(inputArray);
+const resultOne = getReducedString(inputArray);
+console.log(`First answer: ${resultOne}`);
+
+// PART TWO
+
+// Delete a specific character from the string
+function deleteCharacter(arr, cc) {
+  const arrCopy = arr.slice();
+  for (let j = 0; j < arrCopy.length; j++) {
+    if (arrCopy[j] === cc.toUpperCase() || arrCopy[j] === cc.toLowerCase()) {
+      arrCopy.splice(j, 1);
+      j--;
+    }
+  }
+  return arrCopy;
+}
+
+// Store all possible string output based on which alphabet letter is deleted
+let reducedStringsAllChar = [];
+
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const alphabetArray = alphabet.split("");
+alphabetArray.forEach(cc => {
+  const string = getReducedString(deleteCharacter(inputArray, cc));
+  const entry = { char: cc, output: string };
+  reducedStringsAllChar.push(entry);
+});
+
+const resultTwo = reducedStringsAllChar.reduce((a, b) =>
+  a.output < b.output ? a : b
+);
+
+console.log(`Second answer: ${resultTwo.output}`);

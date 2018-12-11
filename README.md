@@ -5,6 +5,5 @@
 3) **Day 3: No Matter How You Slice It** [(Instructions)](https://adventofcode.com/2018/day/3) [(Solution)](https://github.com/Sonjya00/Advent-Of-Code-2018/blob/master/Day_03.js)
 4) **Day 4: Repose Record** [(Instructions)](https://adventofcode.com/2018/day/4) [(Solution)](https://github.com/Sonjya00/Advent-Of-Code-2018/blob/master/Day_04.js)
 5) **Day 5: Alchemical Reduction** [(Instructions)](https://adventofcode.com/2018/day/5) [(Solution)](https://github.com/Sonjya00/Advent-Of-Code-2018/blob/master/Day_05.js)
-
-
-
+6) **Day 6: Chronal Coordinates** [(Instructions)](https://adventofcode.com/2018/day/6) [(Solution)](https://github.com/Sonjya00/Advent-Of-Code-2018/blob/master/Day_06.js)
+7) **Day 7: The Sum of Its Parts** [(Instructions)](https://adventofcode.com/2018/day/7) [(Solution)](https://github.com/Sonjya00/Advent-Of-Code-2018/blob/master/Day_07.js)

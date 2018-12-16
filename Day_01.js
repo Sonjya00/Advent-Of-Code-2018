@@ -1021,8 +1021,8 @@ const frequencyVariationString = frequencyList.split("\n");
 const frequencyVariation = frequencyVariationString.map(Number);
 
 // FIRST CHALLENGE
-let frequencySum = frequencyVariation.reduce((x, y) => x + y);
-console.log(frequencySum);
+let answerOne = frequencyVariation.reduce((x, y) => x + y);
+console.log(answerOne);
 
 // SECOND CHALLENGE
 // Array that represents the frequence at each step
@@ -1048,4 +1048,5 @@ while (firstMatch === null) {
     i++;
   }
 }
-console.log(firstMatch);
+const answerTwo = firstMatch;
+console.log(answerTwo);
